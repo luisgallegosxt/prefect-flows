@@ -32,7 +32,7 @@ This is a simple flow that receive basic parameter for work as a mailer. I call 
 graph LR
 A[Parameters] -->B(Process mail)
     B --> |send| C(Destinators)
-​```
+```
 						
 
 
