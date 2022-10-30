@@ -7,7 +7,7 @@ Python version 3.6
 *There are some other extra libraries that might work with the lastest versions.*
 
 ## Send Mail
-This is a simple flow that receive basic parameter for work as a mailer. I call it a single mailer for notifications purpose for exaple. If you want to use it as a survey mailer i suggest use it as a simple python function, not a flow for best perfomance.
+This is a simple flow that receive basic parameter for work as a mailer. I call it a single mailer for notifications purpose for example. If you want to use it as a survey mailer i suggest use it as a simple python function, not a flow for best perfomance.
 
 **Parameters**
 *Example*
@@ -34,5 +34,18 @@ A[Parameters] -->B(Process mail)
     B --> |send| C(Destinators)
 ```
 						
+## Api Http Request
+An example of http request that pull 100 items responses per request, for that we first call the total items responses count for a simple math operation.
+Notice that this api use an pre existing static apiKey to authenticate, for that reason we dont create an auth task to login first and request a expirable token.
+Addicional we add a transform function that will process your transform code row by row thanks of the `apply()` function.
 
+**Parameter**
+This example dont declarate input parameters
 
+**Flow**
+```mermaid
+graph LR
+A[get_response_task] --> B(get_response_count)
+    B --> C |totals responses| (get_responses)
+    C --> D |df| [extract_response_task]
+```
