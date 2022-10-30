@@ -46,6 +46,6 @@ This example dont declarate input parameters
 ```mermaid
 graph LR
 A[get_response_task] --> B(get_response_count)
-    B --> C |totals responses| (get_responses)
-    C --> D |df| [extract_response_task]
+    B --> |totals responses| C(get_responses)
+    C --> |df| D[extract_response_task]
 ```
