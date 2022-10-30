@@ -49,3 +49,71 @@ A[get_response_task] --> B(get_response_count)
     B --> |totals responses| C(get_responses)
     C --> |df| D[extract_response_task]
 ```
+
+
+## Oracle connections
+Simple oracle connections to select, insert or all kind of querys. Based in this repo https://oracle.github.io/python-oracledb/
+Also you need to download the oracle instantclient version for windows, linux or macOs. https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html#installing-cx-oracle-on-windows
+
+In this example we insert some values to a oracle database. This method receive a list of tuples in order to insert the data.
+**Parameters**
+This flow doesnt receive parameters
+
+
+## Prefect DB
+Prefect use a postgres database, in some cases you will need to make a little ETL for this data, you can use this flow to send some or all the tables of the prefect database to your favorite datawarehouse.
+First you need to connect to the postgres database, get the data and return a dataframe, this df will be usefull to insert to the datawarehouse.
+
+**Parameters**
+This flow doesnt receive parameters, but you can set a list of the tables to load.
+
+**Flow**
+```mermaid
+graph LR
+A[connect_postgres] --> |dataframe| B[export_to_dw]
+```
+
+## Orchestrator flow
+This flow will orchestrate one o more flows to manage up streams, parameters and others. It's important to know if you want to pass a list of parameters, you need to pass a list of dict to the flow.
+
+**Parameters**
+This flow doesnt receive parameters.
+
+**Flow**
+```mermaid
+graph LR
+A[orchestrator flow] --> |parameter or list of parameters| B[flow A]
+  A --> |parameter or list of parameters| C[flow B]
+  A --> |parameter or list of parameters| D[flow C]
+```
+
+## Slack Notifications
+Despite the new versions of Prefect have native ways to communicate with slack or teams, this is a way that i find to send this type of notifications.
+
+
+**Paramaters**
+```json
+{
+    "flow_name": "Flow name",
+    "channel": "SLACK_CHANNEL",
+    "message": "Notification message",
+}
+```
+
+**Flow**
+```mermaid
+graph LR
+A[Parameters] --> B[Message send]
+```
+
+## Slack Notifications as State Handler
+Prefect have a excelent way to manage state handler, in this exaple we will send a slack notification when any task change it state to `FAIL`
+
+**Parameters**
+This flow doesnt receive parameters.
+
+**Flow**
+```mermaid
+graph LR
+A[Dummy task] --> |state change to FAIL| B[Slack Notifications]
+```
