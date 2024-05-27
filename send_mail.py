@@ -1,6 +1,4 @@
-from prefect import task, Flow, Parameter
-import prefect
-
+from prefect import task, flow, get_run_logger
 import glob
 import os
 import datetime
@@ -101,8 +99,8 @@ def send_mail_operator(host,
 	finally:
 		smtp.quit()
 
-
-with Flow("send_single_mail") as flow:
+@flow
+def send_mail():
 
 	# Parameters
 	pathbase = Parameter('pathbase', default=None)
@@ -134,4 +132,12 @@ with Flow("send_single_mail") as flow:
 						pathbase
 						)
 	
-flow.register(project_name="mailing")
+deployment = Deployment.build_from_flow(
+    flow = send_mail,
+    name = "send_mail",
+	path = '/path/to/code/',
+	work_queue_name = 'default',
+	work_pool_name = 'default-agent-pool',
+	tags = ['mailer']
+)
+deployment.apply()

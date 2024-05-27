@@ -7,7 +7,13 @@ import os
 import requests
 import subprocess
 import uuid
-
+# +--------------------------------+
+# |                                |
+# |                                |
+# |   This method is deprecated    |
+# |                                |
+# |                                |
+# +--------------------------------+
 ## callout a existing slack-alert-prefect-flow
 def notify_on_fail(task, old_state, new_state):
 

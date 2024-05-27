@@ -1,40 +1,40 @@
-from prefect import task, Flow, Parameter
-from prefect.tasks.prefect.flow_run_rename import RenameFlowRun
+from prefect import task, flow, get_run_logger
 import pendulum
 
 from datetime import datetime
 import requests
+from dotenv import load_dotenv
+import os
 
+env_path = '/path/to/env/.env'
+load_dotenv(dotenv_path=env_path)
 
-@task
-def generate_new_name(param):
-	current_time = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-	run_name = f"{param} - {current_time}"
-
-	return run_name
-
+slack_token=os.getenv("SLACK_TOKEN")
 
 @task(log_stdout=True)
 def slack(flow_name, channel, message):
-	now = pendulum.now("America/Guayaquil")
+	now = pendulum.now("your_time_zome")
 	fecha = now.strftime('%Y%m%d_%H%M%S')
 	headers = {
-	'Authorization': SLACK_TOKEN,
+	'Authorization': slack_token,
 	'Content-type': 'application/json',
 	}
 	data = '{"channel":"%s","text":"%s - %s", "attachments": [{"text": "%s"}]}' % (channel, fecha, flow_name, message)
 	response = requests.post('https://slack.com/api/chat.postMessage', headers=headers, data=data)
 
-
-with Flow("slack-alerts") as flow:
-
-	flow_name = Parameter('flow_name')
-	channel = Parameter('channel')
-	message = Parameter('message')
-
-	rename_flow = RenameFlowRun()(flow_run_id=None, flow_run_name=generate_new_name(flow_name))
+@flow(flow_run_name="{flow_name} - {fecha}")
+def slack_alerts(flow_name: str, channel: str, message: str):
 
 	slack = slack(flow_name, channel, message)
 
-flow.register(project_name="alerts")
+
+deployment = Deployment.build_from_flow(
+    flow = slack_alerts,
+	name = "slack_alerts",
+	path = '/path/to/code/',
+	work_queue_name = 'default',
+	work_pool_name = 'default-agent-pool',
+	tags = ['alerts']
+)
+deployment.apply()
 											  

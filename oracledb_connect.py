@@ -1,34 +1,22 @@
-from prefect import task, Flow, Parameter, unmapped
-from prefect.executors import DaskExecutor
-from prefect.schedules import CronSchedule
-from prefect.engine import signals, state
-from prefect.tasks.prefect import StartFlowRun
-import pendulum
-import prefect
+from prefect import task, flow, get_run_logger
 
-import glob
-import os
-import datetime
-import requests
-import subprocess
 import oracledb
-import uuid
 
+from dotenv import load_dotenv
+import os
 
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email import encoders
+env_path = '/path/to/env/.env'
+load_dotenv(dotenv_path=env_path)
 
+oracle_username=os.getenv("ORACLE_USERNAME")
+oracle_password=os.getenv("ORACLE_PASSWORD")
 
 @task
 def insert_into_oracle(df):
 	"""Insert into oracle table from list"""
 	"""https://cx-oracle.readthedocs.io/en/latest/user_guide/installation.html#installing-cx-oracle-on-windows"""
 	## construct an insert statement that add a new row to the billing_headers table
-	logger = prefect.context.get("logger")
+	logger = get_run_logger()
 	logger.info("Start process insert into oracle")
 	## Initialize oracle client
 	try:
@@ -38,10 +26,7 @@ def insert_into_oracle(df):
 
     ## Example tuple of list
 	tuples = [('10','TEST',1 , 8 , 15 , 10, 9 , 1900), ('10','TEST1',1 , 8 , 15 , 11, 9 , 1900)]
-    
-    ## In case you have a dataframe
-	# df = df['df'].values
-	# tuples = [tuple(x) for x in df]
+
 
 	# SQL query
 	sql_query_insert_to_oracle = """insert into <SCHEMA>.<TABLE> (col1, col2, col3, col4, col5, col6, col7, col8)
@@ -60,8 +45,9 @@ def insert_into_oracle(df):
 				# commit work
 				connection.commit()
 
-
-with Flow("insert-into-oracle") as flow:
+ 
+@flow
+def oracledb_connect():
 
 	##Oracle
 	username = USERNAME
@@ -69,4 +55,12 @@ with Flow("insert-into-oracle") as flow:
 		
 	insert_into_oracle = insert_into_oracle()
 	
-flow.register(project_name="oracle")
+deployment = Deployment.build_from_flow(
+    flow = oracledb_connect,
+    name = "oracledb_connect",
+	path = '/path/to/code/',
+	work_queue_name = 'default',
+	work_pool_name = 'default-agent-pool',
+	tags=['oracle']
+)
+deployment.apply()

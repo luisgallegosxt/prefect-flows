@@ -1,6 +1,4 @@
-from prefect import task, Flow
-import prefect
-from pandas.tseries.offsets import BDay
+from prefect import task, flow, get_run_logger
 import pandas as pd
 import psycopg2
 from sqlalchemy import create_engine
@@ -9,7 +7,7 @@ from sqlalchemy import create_engine
 @task(log_stdout=True, task_run_name="Postgres: {table_name}")
 def connect_postgres(table_name):
 	"""Connect postgres"""
-	logger = prefect.context.get("logger")
+	logger = get_run_logger()
 	logger.info("Starting connect postgres")
 	logger.info("Table Name: "+ table_name)
 
@@ -30,13 +28,13 @@ def connect_postgres(table_name):
 @task(task_run_name="DW: {table_name}")
 def export_to_dw(dataframe, table_name):
 	"""Export data to datawarehouse"""
-	logger = prefect.context.get("logger")
+	logger = get_run_logger()
 	logger.info("Start export data to dw")
 
-    ## Import to your favorite Datawarehouse :)
+    ## Import to your favorite Datawarehouse =)
 
-
-with Flow("export_prefectdb_to_dw") as flow:
+@flow
+def prefectdb_to_dw():
 
     # You can choose the deseable tables. I exclude some big ones.
 	table_list = ['agent', 
@@ -61,4 +59,12 @@ with Flow("export_prefectdb_to_dw") as flow:
 
 	export_to_dw = export_to_dw.map(connect_postgres, table_list)
 	
-flow.register(project_name="prefectdb")
+deployment = Deployment.build_from_flow(
+    flow = prefectdb_to_dw,
+    name = "prefectdb_to_dw",
+	path = '/path/to/code/',
+	work_queue_name = 'default',
+	work_pool_name = 'default-agent-pool',
+	tags = ['prefect']
+)
+deployment.apply()
