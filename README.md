@@ -1,8 +1,8 @@
 # Prefect Flows uses cases
 **Some of the public prefect flows that i have been development.**
 
-Prefect version 0.156 (I hope update this repo for the version >2.0 soom)
-Python version 3.6
+Prefect version 2.15.0
+Python version 3.11.5
 
 *There are some other extra libraries that might work with the lastest versions.*
 
