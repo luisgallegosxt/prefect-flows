@@ -29,20 +29,20 @@ def read_mongo(db, collection, query, host=mongo_host, port=47057, username=mong
 	cursor = conn_mongo[collection].find(query)
 	df_mongo =  pd.DataFrame(list(cursor))
 	
-    return df_mongo
+	return df_mongo
 
 
 @task
 def import_to_dw(dataframe):
-    # Import to your favorite datawarehouse
-    pass
+	# Import to your favorite datawarehouse
+	pass
 	  
 
 @flow
 def import_from_mongodb():
-    query = {}
+	query = {}
 
-    read_mongo_1 = read_mongo(mongo_db, mongo_schema, query)
+	read_mongo_1 = read_mongo(mongo_db, mongo_schema, query)
 
 	import_to_dw(read_mongo_1)
 
